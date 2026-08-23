@@ -44,7 +44,7 @@ export class TagsController {
     };
   }
 
-  @Get()
+  @Get(':id')
   @HttpCode(HttpStatus.OK)
   async findTagById(@Param() findTagByIdDto: FindTagByIdDto) {
     // fetch the tag
@@ -75,7 +75,7 @@ export class TagsController {
     };
   }
 
-  @Delete()
+  @Delete(':id')
   @HttpCode(HttpStatus.OK)
   async deleteTag(@Param() deleteTagDto: DeleteTagDto) {
     // delete the tag
