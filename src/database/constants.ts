@@ -1,1 +1,1 @@
-export const DRIZZLE= 'DRIZZLE'
+export const DRIZZLE = 'DRIZZLE';
