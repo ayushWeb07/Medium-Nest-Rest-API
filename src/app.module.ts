@@ -9,6 +9,7 @@ import envsValidationSchema from './config/validations/envs.validation';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { IDatabaseConfig } from './config/interfaces/database_config.interface';
 import { Tag } from './tags/tag.entity';
+import { DatabaseModule } from './database/database.module';
 
 const NODE_ENV = process.env.NODE_ENV ?? 'development';
 
@@ -44,6 +45,8 @@ const NODE_ENV = process.env.NODE_ENV ?? 'development';
     }),
 
     TagsModule,
+
+    DatabaseModule,
   ],
 })
 export class AppModule {}
