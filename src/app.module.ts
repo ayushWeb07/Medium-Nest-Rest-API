@@ -45,7 +45,5 @@ const NODE_ENV = process.env.NODE_ENV ?? 'development';
 
     TagsModule,
   ],
-  controllers: [AppController],
-  providers: [AppService],
 })
 export class AppModule {}
