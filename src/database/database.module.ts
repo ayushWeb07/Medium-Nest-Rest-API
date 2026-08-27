@@ -1,15 +1,15 @@
 import { Module } from '@nestjs/common';
-import { DRIZZLE } from './constants';
+import { DRIZZLE_PROVIDER } from './constants';
 import { ConfigService } from '@nestjs/config';
 import { IDatabaseConfig } from '../config/interfaces/database_config.interface';
+import { Pool } from 'pg';
 import * as schema from './schemas/index';
-import mysql from 'mysql2/promise';
-import { drizzle } from 'drizzle-orm/mysql2';
+import { drizzle } from 'drizzle-orm/node-postgres';
 
 @Module({
   providers: [
     {
-      provide: DRIZZLE,
+      provide: DRIZZLE_PROVIDER,
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => {
         // get the database config
@@ -19,13 +19,18 @@ import { drizzle } from 'drizzle-orm/mysql2';
           throw new Error('Database configuration must be setup');
         }
 
-        // create the connection pool and drizzle instance
-        const pool = mysql.createPool(databaseConfig.databaseUrl);
-        return drizzle(pool, {
+        // create a connection pool and drizzle instance
+        const pool = new Pool({
+          connectionString: databaseConfig.databaseUrl,
+        });
+
+        return drizzle({
+          client: pool,
           schema,
         });
       },
     },
   ],
+  exports: [DRIZZLE_PROVIDER],
 })
 export class DatabaseModule {}

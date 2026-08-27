@@ -1,10 +1,13 @@
-import { mysqlTable, varchar, timestamp } from 'drizzle-orm/mysql-core';
+import { pgTable, varchar, timestamp, serial, text } from 'drizzle-orm/pg-core';
 
-export const tags = mysqlTable('tags', {
-  id: varchar('id', { length: 36 }).primaryKey(), // no defaultRandom() uuid in mysql-core — generate in app code
-  email: varchar('email', { length: 255 }).notNull().unique(),
-  username: varchar('username', { length: 50 }).notNull(),
-  password: varchar('password', { length: 255 }),
-  googleId: varchar('google_id', { length: 255 }),
-  createdAt: timestamp('created_at').defaultNow(),
+export const tags = pgTable('tags', {
+  id: serial('id').primaryKey(),
+  title: varchar('title', { length: 300 }).notNull(),
+  description: text('description').notNull(),
+
+  createdAt: timestamp('created_at', { mode: 'string' }).notNull().defaultNow(),
+  updatedAt: timestamp('updated_at', { mode: 'string' })
+    .notNull()
+    .defaultNow()
+    .$onUpdate(() => new Date().toISOString()),
 });
