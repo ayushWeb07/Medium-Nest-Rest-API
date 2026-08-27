@@ -1,83 +1,73 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { Tag } from '../tag.entity';
-import { DeleteResult, Repository, UpdateResult } from 'typeorm';
-import { InjectRepository } from '@nestjs/typeorm';
 import { CreateTagDto } from '../dtos/create-tag.dto';
 import { FindTagByIdDto } from '../dtos/find-tag-by-id.dto';
 import { DeleteTagDto } from '../dtos/delete-tag.dto';
 import { UpdateTagDto } from '../dtos/update-tag.dto';
+import { DRIZZLE_PROVIDER } from '../../database/constants';
+import { NodePgDatabase } from 'drizzle-orm/node-postgres';
+import * as schema from '../../database/schemas';
+import { tags } from '../../database/schemas';
+import { InsertTagType, SelectTagType } from '../../database/types/tag.type';
+import { eq } from 'drizzle-orm';
 
 @Injectable()
 export class TagsService {
   constructor(
-    @InjectRepository(Tag)
-    private tagsRepository: Repository<Tag>,
+    @Inject(DRIZZLE_PROVIDER)
+    private readonly db: NodePgDatabase<typeof schema>,
   ) {}
 
-  async createTag(createTagDto: CreateTagDto): Promise<Tag> {
-    // create the tag instance
-    let newTag = this.tagsRepository.create(createTagDto);
+  async createTag(createTagDto: CreateTagDto): Promise<InsertTagType> {
+    // insert the tag into the db
+    const [newTag] = await this.db
+      .insert(tags)
+      .values(createTagDto)
+      .returning();
 
-    // save it
-    newTag = await this.tagsRepository.save(newTag);
     return newTag;
   }
 
-  async findAllTags(): Promise<Tag[]> {
-    // fetch all the tags
-    const tags = await this.tagsRepository.find();
-    return tags;
+  async findAllTags(): Promise<SelectTagType[]> {
+    // fetch all the tags from db
+    const fetchedTags = await this.db.select().from(tags);
+    return fetchedTags;
   }
 
-  async findTagById(findTagByIdDto: FindTagByIdDto): Promise<Tag | null> {
-    // fetch the tag
-    const tag = await this.tagsRepository.findOne({
-      where: {
-        id: findTagByIdDto.id,
-      },
-    });
+  async findTagById(findTagByIdDto: FindTagByIdDto): Promise<SelectTagType> {
+    // fetch the tag from db
+    const [fetchedTag] = await this.db
+      .select()
+      .from(tags)
+      .where(eq(tags.id, findTagByIdDto.id));
 
-    return tag;
+    if (!fetchedTag) {
+      throw new NotFoundException('Such a tag does not exist');
+    }
+
+    return fetchedTag;
   }
 
-  async updateTag(updateTagDto: UpdateTagDto): Promise<UpdateResult | null> {
-    // fetch the tag
-    const tag = await this.findTagById({
+  async updateTag(updateTagDto: UpdateTagDto): Promise<void> {
+    // check if tag does exist
+    await this.findTagById({
       id: updateTagDto.id,
     });
 
-    if (!tag) {
-      return null;
-    }
-
-    // update the tag
-    const result: UpdateResult = await this.tagsRepository.update(
-      {
-        id: updateTagDto.id,
-      },
-      {
-        ...updateTagDto,
-      },
-    );
-
-    return result;
+    // update the tag in the db
+    await this.db
+      .update(tags)
+      .set(updateTagDto)
+      .where(eq(tags.id, updateTagDto.id));
   }
 
-  async deleteTag(deleteTagDto: DeleteTagDto): Promise<DeleteResult | null> {
-    // fetch the tag
-    const tag = await this.findTagById({
+  async deleteTag(deleteTagDto: DeleteTagDto): Promise<void> {
+    // check if tag does exist
+    await this.findTagById({
       id: deleteTagDto.id,
     });
 
-    if (!tag) {
-      return null;
-    }
-
-    // delete the tag
-    const result: DeleteResult = await this.tagsRepository.delete({
-      id: deleteTagDto.id,
-    });
-
-    return result;
+    // delete the tag from the db
+    await this.db.delete(tags).where(eq(tags.id, deleteTagDto.id));
   }
 }

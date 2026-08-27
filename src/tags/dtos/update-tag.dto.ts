@@ -1,10 +1,9 @@
-import { IsInt } from 'class-validator';
+import { IsDefined, IsInt } from 'class-validator';
 import { CreateTagDto } from './create-tag.dto';
-import { Type } from 'class-transformer';
 import { PartialType } from '@nestjs/swagger';
 
 export class UpdateTagDto extends PartialType(CreateTagDto) {
-  @Type(() => Number)
+  @IsDefined()
   @IsInt()
   id: number;
 }

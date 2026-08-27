@@ -4,6 +4,12 @@ export class CreateTagDto {
   @IsNotEmpty()
   @IsString()
   @MinLength(5)
-  @MaxLength(25)
-  name: string;
+  @MaxLength(100)
+  title: string;
+
+  @IsNotEmpty()
+  @IsString()
+  @MinLength(25)
+  @MaxLength(300)
+  description: string;
 }
