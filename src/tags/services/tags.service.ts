@@ -1,5 +1,4 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
-import { Tag } from '../tag.entity';
 import { CreateTagDto } from '../dtos/create-tag.dto';
 import { FindTagByIdDto } from '../dtos/find-tag-by-id.dto';
 import { DeleteTagDto } from '../dtos/delete-tag.dto';
