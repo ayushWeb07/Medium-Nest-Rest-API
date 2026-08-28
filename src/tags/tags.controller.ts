@@ -18,7 +18,7 @@ import { UpdateTagDto } from './dtos/update-tag.dto';
 import { DeleteTagDto } from './dtos/delete-tag.dto';
 import { InsertTagType, SelectTagType } from '../database/types/tag.type';
 
-@Controller('api/tags')
+@Controller('tags')
 export class TagsController {
   constructor(private readonly tagsService: TagsService) {}
 

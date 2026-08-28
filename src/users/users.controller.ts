@@ -10,7 +10,7 @@ import UsersService from './services/users.service';
 import { SelectUserType } from '../database/types/user.type';
 import { FindUserByIdDto } from './dtos/find-user-by-id.dto';
 
-@Controller('api/users')
+@Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 

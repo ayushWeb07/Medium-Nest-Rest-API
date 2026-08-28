@@ -12,7 +12,7 @@ import { LoginDto } from './dtos/login.dto';
 import { IGenerateTokensResponse } from './interfaces/generate-tokens-response.interface';
 import type { Response } from 'express';
 
-@Controller('api/auth')
+@Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 

@@ -7,6 +7,9 @@ import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+  // append the prefix
+  app.setGlobalPrefix('api/v1');
+
   // register the dto validation pipe
   app.useGlobalPipes(
     new ValidationPipe({
@@ -19,7 +22,7 @@ async function bootstrap() {
   app.use(cookieParser());
 
   // register the http exception filter
-  app.useGlobalPipes(new HttpExceptionFilter());
+  app.useGlobalFilters(new HttpExceptionFilter());
 
   await app.listen(process.env.SERVER_PORT ?? 8000);
 }
