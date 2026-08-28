@@ -1,11 +1,19 @@
-import { ConflictException, Inject, Injectable } from '@nestjs/common';
+import {
+  ConflictException,
+  Inject,
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import UsersService from '../../users/services/users.service';
 import { DRIZZLE_PROVIDER } from '../../database/constants';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import * as schema from '../../database/schemas';
 import { RegisterDto } from '../dtos/register.dto';
 import { HashingService } from '../../hashing/services/hashing.service';
-import { InsertUserType } from '../../database/types/user.type';
+import { InsertUserType, SelectUserType } from '../../database/types/user.type';
+import { LoginDto } from '../dtos/login.dto';
 
 @Injectable()
 export class AuthService {
@@ -17,20 +25,22 @@ export class AuthService {
     private readonly hashingService: HashingService,
   ) {}
 
-  async register(registerDto: RegisterDto): Promise<InsertUserType> {
-    // call the check email exists service
-    const emailExists = await this.usersService.checkEmailExists({
-      email: registerDto.email,
-    });
+  async register(registerDto: RegisterDto): Promise<InsertUserType | null> {
+    // call the find user by email service
+    const existingUser: SelectUserType | null =
+      await this.usersService.findUserByEmail({
+        email: registerDto.email,
+      });
 
-    if (emailExists) {
+    if (existingUser) {
       throw new ConflictException('User with such email already exists');
     }
 
-    // hash the password
+    // call the hash password service
     const hashedPassword = await this.hashingService.hashPassword(
       registerDto.password,
     );
+
     registerDto.password = hashedPassword;
 
     // call the create user service
@@ -38,9 +48,28 @@ export class AuthService {
     return newUser;
   }
 
-  async login() {
-    // check email exists
+  async login(loginDto: LoginDto): Promise<SelectUserType> {
+    // call the find user by email service
+    const existingUser: SelectUserType | null =
+      await this.usersService.findUserByEmail({
+        email: loginDto.email,
+      });
+
+    if (!existingUser) {
+      throw new UnauthorizedException('User with such email does not exist');
+    }
+
     // check password is correct
+    const isPasswordsMatch = await this.hashingService.comparePasswords(
+      loginDto.password,
+      existingUser.password,
+    );
+
+    if (!isPasswordsMatch) {
+      throw new UnauthorizedException('Invalid credentials has been provided');
+    }
+
     // return user
+    return existingUser;
   }
 }

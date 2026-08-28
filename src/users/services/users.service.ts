@@ -11,7 +11,7 @@ import { users } from '../../database/schemas';
 import { InsertUserType, SelectUserType } from '../../database/types/user.type';
 import { FindUserByIdDto } from '../dtos/find-user-by-id.dto';
 import { eq } from 'drizzle-orm';
-import { CheckEmailExistsDto } from '../dtos/check-email-exists.dto';
+import { FindUserByEmailDto } from '../dtos/find-user-by-email.dto';
 import { CreateUserDto } from '../dtos/create-user.dto';
 
 @Injectable()
@@ -21,20 +21,16 @@ class UsersService {
     private readonly db: NodePgDatabase<typeof schema>,
   ) {}
 
-  async createUser(createUserDto: CreateUserDto): Promise<InsertUserType> {
+  async createUser(
+    createUserDto: CreateUserDto,
+  ): Promise<InsertUserType | null> {
     // insert the user into the db
     const [newUser] = await this.db
       .insert(users)
       .values(createUserDto)
       .returning();
 
-    if (!newUser) {
-      throw new InternalServerErrorException(
-        'Something went wrong while creating the user',
-      );
-    }
-
-    return newUser;
+    return newUser ?? null;
   }
 
   async findAllUsers(): Promise<SelectUserType[]> {
@@ -45,34 +41,26 @@ class UsersService {
 
   async findUserById(
     findUserByIdDto: FindUserByIdDto,
-  ): Promise<SelectUserType> {
+  ): Promise<SelectUserType | null> {
     // query single user from the db
     const [fetchedUser] = await this.db
       .select()
       .from(users)
       .where(eq(users.id, findUserByIdDto.id));
 
-    if (!fetchedUser) {
-      throw new NotFoundException('Such a user does not exist');
-    }
-
-    return fetchedUser;
+    return fetchedUser ?? null;
   }
 
-  async checkEmailExists(
-    checkEmailExistsDto: CheckEmailExistsDto,
-  ): Promise<boolean> {
+  async findUserByEmail(
+    findUserByEmailDto: FindUserByEmailDto,
+  ): Promise<SelectUserType | null> {
     // query single user from the db
     const [fetchedUser] = await this.db
       .select()
       .from(users)
-      .where(eq(users.email, checkEmailExistsDto.email));
+      .where(eq(users.email, findUserByEmailDto.email));
 
-    if (!fetchedUser) {
-      return false;
-    }
-
-    return true;
+    return fetchedUser ?? null;
   }
 }
 
