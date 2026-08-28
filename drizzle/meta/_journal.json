@@ -1,0 +1,27 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1787871062430,
+      "tag": "0000_glamorous_the_hand",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1787871640563,
+      "tag": "0001_naive_sharon_ventura",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1787892016850,
+      "tag": "0002_add-users-table",
+      "breakpoints": true
+    }
+  ]
+}

@@ -1,11 +1,10 @@
 import { Module } from '@nestjs/common';
 import { TagsController } from './tags.controller';
 import { TagsService } from './services/tags.service';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { Tag } from './tag.entity';
+import { DatabaseModule } from '../database/database.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Tag])],
+  imports: [DatabaseModule],
   controllers: [TagsController],
   providers: [TagsService],
 })

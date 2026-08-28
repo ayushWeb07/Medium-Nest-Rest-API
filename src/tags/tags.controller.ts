@@ -5,6 +5,7 @@ import {
   Get,
   HttpCode,
   HttpStatus,
+  InternalServerErrorException,
   NotFoundException,
   Param,
   Patch,
@@ -15,6 +16,7 @@ import { CreateTagDto } from './dtos/create-tag.dto';
 import { FindTagByIdDto } from './dtos/find-tag-by-id.dto';
 import { UpdateTagDto } from './dtos/update-tag.dto';
 import { DeleteTagDto } from './dtos/delete-tag.dto';
+import { InsertTagType, SelectTagType } from '../database/types/tag.type';
 
 @Controller('api/tags')
 export class TagsController {
@@ -23,70 +25,75 @@ export class TagsController {
   @Post()
   @HttpCode(HttpStatus.CREATED)
   async createTag(@Body() createTagDto: CreateTagDto) {
-    // create the tag
-    const tag = await this.tagsService.createTag(createTagDto);
+    // call the create tag service
+    const newTag: InsertTagType | null =
+      await this.tagsService.createTag(createTagDto);
+
+    if (!newTag) {
+      throw new InternalServerErrorException(
+        'Something went wrong while creating the tag',
+      );
+    }
 
     return {
-      message: 'A new tag was successfully created',
-      tag,
+      success: true,
+      message: 'Successfully created a new tag',
+      newTag,
     };
   }
 
   @Get()
   @HttpCode(HttpStatus.OK)
   async findAllTags() {
-    // fetch all the tags
-    const tags = await this.tagsService.findAllTags();
+    // call the find all tags service
+    const fetchedTags: SelectTagType[] = await this.tagsService.findAllTags();
 
     return {
-      message: 'All the tags were successfully fetched',
-      tags,
+      success: true,
+      message: 'Successfully fetched all the tags',
+      fetchedTags,
     };
   }
 
   @Get(':id')
   @HttpCode(HttpStatus.OK)
   async findTagById(@Param() findTagByIdDto: FindTagByIdDto) {
-    // fetch the tag
-    const tag = await this.tagsService.findTagById(findTagByIdDto);
+    // call the find tag by id service
+    const fetchedTag: SelectTagType | null =
+      await this.tagsService.findTagById(findTagByIdDto);
 
-    if (!tag) {
-      throw new NotFoundException('Such a tag does not exist');
+    if (!fetchedTag) {
+      throw new NotFoundException('Such tag does not exist');
     }
 
     return {
-      message: 'The required tag was successfully fetched',
-      tag,
+      success: true,
+      message: 'Successfully fetched the tag',
+      fetchedTag,
     };
   }
 
   @Patch()
   @HttpCode(HttpStatus.OK)
   async updateTag(@Body() updateTagDto: UpdateTagDto) {
-    // update the tag
-    const tagUpdateResult = await this.tagsService.updateTag(updateTagDto);
-
-    if (!tagUpdateResult) {
-      throw new NotFoundException('Such a tag does not exist');
-    }
+    // call the update tag service
+    await this.tagsService.updateTag(updateTagDto);
 
     return {
-      message: 'The tag was successfully updated',
+      success: true,
+      message: 'Successfully updated the tag',
     };
   }
 
   @Delete(':id')
   @HttpCode(HttpStatus.OK)
   async deleteTag(@Param() deleteTagDto: DeleteTagDto) {
-    // delete the tag
-    const tagDeleteResult = await this.tagsService.deleteTag(deleteTagDto);
-
-    if (!tagDeleteResult) {
-      throw new NotFoundException('Such a tag does not exist');
-    }
+    // call the delete tag service
+    await this.tagsService.deleteTag(deleteTagDto);
 
     return {
-      message: 'The tag was successfully deleted',
+      success: true,
+      message: 'Successfully deleted the tag',
     };
   }
 }
