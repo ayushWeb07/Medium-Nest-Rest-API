@@ -8,6 +8,7 @@ import { DatabaseModule } from './database/database.module';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { HashingModule } from './hashing/hashing.module';
+import { JwtModule } from '@nestjs/jwt';
 
 const NODE_ENV = process.env.NODE_ENV ?? 'development';
 
@@ -19,6 +20,10 @@ const NODE_ENV = process.env.NODE_ENV ?? 'development';
       load: [serverConfig, databaseConfig],
       envFilePath: `.env.${NODE_ENV}`,
     }),
+    JwtModule.register({
+      global: true,
+    }),
+
     TagsModule,
     DatabaseModule,
     UsersModule,
