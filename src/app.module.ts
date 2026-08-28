@@ -7,6 +7,7 @@ import envsValidationSchema from './config/validations/envs.validation';
 import { DatabaseModule } from './database/database.module';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
+import { HashingModule } from './hashing/hashing.module';
 
 const NODE_ENV = process.env.NODE_ENV ?? 'development';
 
@@ -22,6 +23,7 @@ const NODE_ENV = process.env.NODE_ENV ?? 'development';
     DatabaseModule,
     UsersModule,
     AuthModule,
+    HashingModule,
   ],
 })
 export class AppModule {}
