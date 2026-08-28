@@ -4,6 +4,8 @@ import { DRIZZLE_PROVIDER } from '../../database/constants';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import * as schema from '../../database/schemas';
 import { RegisterDto } from '../dtos/register.dto';
+import { HashingService } from '../../hashing/services/hashing.service';
+import { InsertUserType } from '../../database/types/user.type';
 
 @Injectable()
 export class AuthService {
@@ -12,9 +14,10 @@ export class AuthService {
     private readonly db: NodePgDatabase<typeof schema>,
 
     private readonly usersService: UsersService,
+    private readonly hashingService: HashingService,
   ) {}
 
-  async register(registerDto: RegisterDto) {
+  async register(registerDto: RegisterDto): Promise<InsertUserType> {
     // call the check email exists service
     const emailExists = await this.usersService.checkEmailExists({
       email: registerDto.email,
@@ -25,9 +28,14 @@ export class AuthService {
     }
 
     // hash the password
+    const hashedPassword = await this.hashingService.hashPassword(
+      registerDto.password,
+    );
+    registerDto.password = hashedPassword;
 
     // call the create user service
-    await th;
+    const newUser = await this.usersService.createUser(registerDto);
+    return newUser;
   }
 
   async login() {
