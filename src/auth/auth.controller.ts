@@ -6,10 +6,7 @@ import {
   InternalServerErrorException,
   Post,
 } from '@nestjs/common';
-import { TagsService } from '../tags/services/tags.service';
 import { AuthService } from './services/auth.service';
-import { CreateTagDto } from '../tags/dtos/create-tag.dto';
-import { InsertTagType } from '../database/types/tag.type';
 import { RegisterDto } from './dtos/register.dto';
 import { InsertUserType, SelectUserType } from '../database/types/user.type';
 import { LoginDto } from './dtos/login.dto';
@@ -18,7 +15,7 @@ import { LoginDto } from './dtos/login.dto';
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @Post()
+  @Post('register')
   @HttpCode(HttpStatus.CREATED)
   async register(@Body() registerDto: RegisterDto) {
     // call the register auth service
@@ -38,7 +35,7 @@ export class AuthController {
     };
   }
 
-  @Post()
+  @Post('login')
   @HttpCode(HttpStatus.OK)
   async login(@Body() loginDto: LoginDto) {
     // call the login auth service
