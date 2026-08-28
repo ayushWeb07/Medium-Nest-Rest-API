@@ -5,6 +5,8 @@ import {
   Get,
   HttpCode,
   HttpStatus,
+  InternalServerErrorException,
+  NotFoundException,
   Param,
   Patch,
   Post,
@@ -24,12 +26,19 @@ export class TagsController {
   @HttpCode(HttpStatus.CREATED)
   async createTag(@Body() createTagDto: CreateTagDto) {
     // call the create tag service
-    const tag: InsertTagType = await this.tagsService.createTag(createTagDto);
+    const newTag: InsertTagType | null =
+      await this.tagsService.createTag(createTagDto);
+
+    if (!newTag) {
+      throw new InternalServerErrorException(
+        'Something went wrong while creating the tag',
+      );
+    }
 
     return {
       success: true,
       message: 'Successfully created a new tag',
-      tag,
+      newTag,
     };
   }
 
@@ -50,8 +59,12 @@ export class TagsController {
   @HttpCode(HttpStatus.OK)
   async findTagById(@Param() findTagByIdDto: FindTagByIdDto) {
     // call the find tag by id service
-    const fetchedTag: SelectTagType =
+    const fetchedTag: SelectTagType | null =
       await this.tagsService.findTagById(findTagByIdDto);
+
+    if (!fetchedTag) {
+      throw new NotFoundException('Such tag does not exist');
+    }
 
     return {
       success: true,

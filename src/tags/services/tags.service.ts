@@ -17,14 +17,14 @@ export class TagsService {
     private readonly db: NodePgDatabase<typeof schema>,
   ) {}
 
-  async createTag(createTagDto: CreateTagDto): Promise<InsertTagType> {
+  async createTag(createTagDto: CreateTagDto): Promise<InsertTagType | null> {
     // insert the tag into the db
     const [newTag] = await this.db
       .insert(tags)
       .values(createTagDto)
       .returning();
 
-    return newTag;
+    return newTag ?? null;
   }
 
   async findAllTags(): Promise<SelectTagType[]> {
@@ -33,25 +33,27 @@ export class TagsService {
     return fetchedTags;
   }
 
-  async findTagById(findTagByIdDto: FindTagByIdDto): Promise<SelectTagType> {
+  async findTagById(
+    findTagByIdDto: FindTagByIdDto,
+  ): Promise<SelectTagType | null> {
     // fetch the tag from db
     const [fetchedTag] = await this.db
       .select()
       .from(tags)
       .where(eq(tags.id, findTagByIdDto.id));
 
-    if (!fetchedTag) {
-      throw new NotFoundException('Such a tag does not exist');
-    }
-
-    return fetchedTag;
+    return fetchedTag ?? null;
   }
 
   async updateTag(updateTagDto: UpdateTagDto): Promise<void> {
     // check if tag does exist
-    await this.findTagById({
+    const existingTag: SelectTagType | null = await this.findTagById({
       id: updateTagDto.id,
     });
+
+    if (!existingTag) {
+      throw new NotFoundException('Such tag does not exist');
+    }
 
     // update the tag in the db
     await this.db
@@ -62,9 +64,13 @@ export class TagsService {
 
   async deleteTag(deleteTagDto: DeleteTagDto): Promise<void> {
     // check if tag does exist
-    await this.findTagById({
+    const existingTag: SelectTagType | null = await this.findTagById({
       id: deleteTagDto.id,
     });
+
+    if (!existingTag) {
+      throw new NotFoundException('Such tag does not exist');
+    }
 
     // delete the tag from the db
     await this.db.delete(tags).where(eq(tags.id, deleteTagDto.id));
