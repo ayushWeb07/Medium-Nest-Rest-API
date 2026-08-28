@@ -14,6 +14,8 @@ import { RegisterDto } from '../dtos/register.dto';
 import { HashingService } from '../../hashing/services/hashing.service';
 import { InsertUserType, SelectUserType } from '../../database/types/user.type';
 import { LoginDto } from '../dtos/login.dto';
+import { GenerateTokensService } from './generate-tokens.service';
+import { IGenerateTokensResponse } from '../interfaces/generate-tokens-response.interface';
 
 @Injectable()
 export class AuthService {
@@ -23,9 +25,10 @@ export class AuthService {
 
     private readonly usersService: UsersService,
     private readonly hashingService: HashingService,
+    private readonly generateTokensService: GenerateTokensService,
   ) {}
 
-  async register(registerDto: RegisterDto): Promise<InsertUserType | null> {
+  async register(registerDto: RegisterDto): Promise<IGenerateTokensResponse> {
     // call the find user by email service
     const existingUser: SelectUserType | null =
       await this.usersService.findUserByEmail({
@@ -45,10 +48,23 @@ export class AuthService {
 
     // call the create user service
     const newUser = await this.usersService.createUser(registerDto);
-    return newUser;
+
+    if (!newUser) {
+      throw new InternalServerErrorException(
+        'Something went wrong while user registration',
+      );
+    }
+
+    // generate tokens
+    const tokens = await this.generateTokensService.generateTokens({
+      userId: newUser.id!,
+      userEmail: newUser.email,
+    });
+
+    return tokens;
   }
 
-  async login(loginDto: LoginDto): Promise<SelectUserType> {
+  async login(loginDto: LoginDto): Promise<IGenerateTokensResponse> {
     // call the find user by email service
     const existingUser: SelectUserType | null =
       await this.usersService.findUserByEmail({
@@ -69,7 +85,12 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials has been provided');
     }
 
-    // return user
-    return existingUser;
+    // generate tokens
+    const tokens = await this.generateTokensService.generateTokens({
+      userId: existingUser.id,
+      userEmail: existingUser.email,
+    });
+
+    return tokens;
   }
 }

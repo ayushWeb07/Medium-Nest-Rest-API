@@ -10,6 +10,7 @@ import { AuthService } from './services/auth.service';
 import { RegisterDto } from './dtos/register.dto';
 import { InsertUserType, SelectUserType } from '../database/types/user.type';
 import { LoginDto } from './dtos/login.dto';
+import { IGenerateTokensResponse } from './interfaces/generate-tokens-response.interface';
 
 @Controller('api/auth')
 export class AuthController {
@@ -19,19 +20,13 @@ export class AuthController {
   @HttpCode(HttpStatus.CREATED)
   async register(@Body() registerDto: RegisterDto) {
     // call the register auth service
-    const newUser: InsertUserType | null =
+    const tokens: IGenerateTokensResponse =
       await this.authService.register(registerDto);
-
-    if (!newUser) {
-      throw new InternalServerErrorException(
-        'Something went wrong while user registration',
-      );
-    }
 
     return {
       success: true,
       message: 'Successfully registered the user',
-      newUser,
+      tokens,
     };
   }
 
@@ -39,12 +34,13 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   async login(@Body() loginDto: LoginDto) {
     // call the login auth service
-    const loggedUser: SelectUserType = await this.authService.login(loginDto);
+    const tokens: IGenerateTokensResponse =
+      await this.authService.login(loginDto);
 
     return {
       success: true,
       message: 'Successfully logged in the user',
-      loggedUser,
+      tokens,
     };
   }
 }
