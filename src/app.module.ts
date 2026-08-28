@@ -9,6 +9,8 @@ import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { HashingModule } from './hashing/hashing.module';
 import { JwtModule } from '@nestjs/jwt';
+import { APP_FILTER } from '@nestjs/core';
+import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 
 const NODE_ENV = process.env.NODE_ENV ?? 'development';
 
@@ -29,6 +31,13 @@ const NODE_ENV = process.env.NODE_ENV ?? 'development';
     UsersModule,
     AuthModule,
     HashingModule,
+  ],
+
+  providers: [
+    {
+      provide: APP_FILTER,
+      useClass: HttpExceptionFilter,
+    },
   ],
 })
 export class AppModule {}
